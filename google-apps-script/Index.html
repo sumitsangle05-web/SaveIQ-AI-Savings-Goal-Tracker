@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaveIQ – AI Savings Goal Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0B0F19;
+      --card-bg: rgba(24, 32, 54, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-blue: #3B82F6;
+      --accent-indigo: #6366F1;
+      --accent-green: #10B981;
+      --accent-amber: #F59E0B;
+      --accent-red: #EF4444;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      --glow-blue: rgba(59, 130, 246, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.12) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* Header & Navigation */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 16px var(--glow-blue);
+    }
+
+    .brand-title h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #FFFFFF, #94A3B8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-title span {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563EB 0%, #4F46E5 100%);
+      color: white;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    /* KPI Summary Cards Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 20px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--card-accent, #3B82F6);
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 4px;
+      letter-spacing: -0.5px;
+    }
+
+    .kpi-subtext {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* Controls & Filter Bar */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      padding: 6px 14px;
+      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-chip.active, .filter-chip:hover {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--accent-blue);
+      color: #93C5FD;
+    }
+
+    .search-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 8px 16px;
+      color: var(--text-main);
+      font-size: 13px;
+      outline: none;
+      min-width: 240px;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Goals Cards Grid */
+    .goals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 22px;
+      margin-bottom: 40px;
+    }
+
+    .goal-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .goal-card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .goal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .goal-category {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.12);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    .goal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.3px;
+    }
+
+    .badge-status {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    .badge-in-progress { background: rgba(59, 130, 246, 0.2); color: #93C5FD; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .badge-completed { background: rgba(16, 185, 129, 0.2); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-near-deadline { background: rgba(245, 158, 11, 0.2); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-overdue { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+    .goal-purpose {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Financial Meter & Progress */
+    .progress-section {
+      margin-bottom: 18px;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .progress-track {
+      background: rgba(255, 255, 255, 0.08);
+      height: 10px;
+      border-radius: 9999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, #3B82F6 0%, #10B981 100%);
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .metrics-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .metric-sub-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .metric-sub-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 2px;
+    }
+
+    /* Card Actions */
+    .goal-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-card {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-deposit {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34D399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .btn-deposit:hover { background: rgba(16, 185, 129, 0.25); }
+
+    .btn-ai {
+      background: rgba(99, 102, 241, 0.15);
+      color: #A5B4FC;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .btn-ai:hover { background: rgba(99, 102, 241, 0.25); }
+
+    .btn-del {
+      background: rgba(239, 68, 68, 0.1);
+      color: #F87171;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      flex: 0 0 36px;
+    }
+    .btn-del:hover { background: rgba(239, 68, 68, 0.2); }
+
+    /* Modal Overlay & Styling */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 16, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: #131B2E;
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      max-width: 580px;
+      width: 100%;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      transform: scale(0.95);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* AI Insight Modal Body */
+    .ai-bubble {
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #E0E7FF;
+      white-space: pre-wrap;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Notification Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1E293B;
+      border: 1px solid #3B82F6;
+      padding: 14px 20px;
+      border-radius: 12px;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Top Header -->
+    <header>
+      <div class="brand">
+        <div class="logo-badge">⚡</div>
+        <div class="brand-title">
+          <h1>SaveIQ</h1>
+          <span>AI-Powered Savings Goal Tracker &bull; Groq LLaMA 3.3-70B</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="triggerAuditNow()">
+          <span>⏱️</span> Run Daily Audit
+        </button>
+        <button class="btn btn-primary" onclick="openCreateModal()">
+          <span>+</span> New Savings Goal
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI Dashboard Summary -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--card-accent: #3B82F6;">
+        <div class="kpi-label">Total Goals</div>
+        <div class="kpi-value" id="kpi-total-goals">0</div>
+        <div class="kpi-subtext" id="kpi-active-goals">Active: 0</div>
+      </div>
+      <div class="kpi-card" style="--card-accent: #10B981;">
+        <div class="kpi-label">Total Saved</div>
+        <div class="kpi-value" id="kpi-total-saved">$0</div>
+        <div class="kpi-subtext" id="kpi-overall-progress">Overall: 0%</div>
+      </div>
+      <div class="kpi-card" style="--card-accent: #F59E0B;">
+        <div class="kpi-label">Remaining Target</div>
+        <div class="kpi-value" id="kpi-total-remaining">$0</div>
+        <div class="kpi-subtext" id="kpi-total-target">Goal Pool: $0</div>
+      </div>
+      <div class="kpi-card" style="--card-accent: #8B5CF6;">
+        <div class="kpi-label">Goal Completion</div>
+        <div class="kpi-value" id="kpi-completed-goals">0</div>
+        <div class="kpi-subtext" id="kpi-overdue-goals">Overdue: 0</div>
+      </div>
+    </div>
+
+    <!-- Toolbar: Search and Filter Chips -->
+    <div class="toolbar">
+      <div class="filter-group">
+        <button class="filter-chip active" onclick="setFilter('all', this)">All Goals</button>
+        <button class="filter-chip" onclick="setFilter('In Progress', this)">In Progress</button>
+        <button class="filter-chip" onclick="setFilter('Near Deadline', this)">Near Deadline</button>
+        <button class="filter-chip" onclick="setFilter('Completed', this)">Completed</button>
+        <button class="filter-chip" onclick="setFilter('Overdue', this)">Overdue</button>
+      </div>
+      <input type="text" id="search-input" class="search-input" placeholder="Search goals by name or category..." oninput="handleSearch()">
+    </div>
+
+    <!-- Goals Grid Container -->
+    <div class="goals-grid" id="goals-grid">
+      <!-- Dynamically Rendered Goal Cards -->
+    </div>
+  </div>
+
+  <!-- MODAL: Create New Savings Goal -->
+  <div class="modal-overlay" id="modal-create">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Create Financial Savings Goal</h2>
+        <button class="modal-close" onclick="closeModal('modal-create')">&times;</button>
+      </div>
+      <form id="form-create-goal" onsubmit="handleCreateGoal(event)">
+        <div class="form-group">
+          <label>Goal Name</label>
+          <input type="text" id="create-name" class="form-control" placeholder="e.g. 6-Month Emergency Fund" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category</label>
+            <select id="create-category" class="form-control">
+              <option value="Emergency Fund">Emergency Fund</option>
+              <option value="Gadget / Electronics">Gadget / Electronics</option>
+              <option value="Travel & Vacation">Travel & Vacation</option>
+              <option value="Education">Education</option>
+              <option value="Vehicle / Transport">Vehicle / Transport</option>
+              <option value="Home & Real Estate">Home & Real Estate</option>
+              <option value="Investment / Wealth">Investment / Wealth</option>
+              <option value="General Savings">General Savings</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Target Amount ($)</label>
+            <input type="number" id="create-target" class="form-control" placeholder="5000" min="1" step="0.01" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Initial Savings ($)</label>
+            <input type="number" id="create-initial" class="form-control" placeholder="500" min="0" step="0.01" value="0">
+          </div>
+          <div class="form-group">
+            <label>Target Deadline</label>
+            <input type="date" id="create-deadline" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notification Email</label>
+          <input type="email" id="create-email" class="form-control" placeholder="user@example.com">
+        </div>
+        <div class="form-group">
+          <label>Purpose & Motivational Notes</label>
+          <textarea id="create-purpose" class="form-control" rows="2" placeholder="Why is this goal critical to your financial freedom?"></textarea>
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="create-alerts" checked>
+          <label for="create-alerts" style="margin: 0; text-transform: none; cursor: pointer;">Enable automated daily audit & deadline reminder emails</label>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-goal">Create Goal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Add Deposit -->
+  <div class="modal-overlay" id="modal-deposit">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header">
+        <h2>Record Savings Deposit</h2>
+        <button class="modal-close" onclick="closeModal('modal-deposit')">&times;</button>
+      </div>
+      <form id="form-deposit" onsubmit="handleDepositSubmit(event)">
+        <input type="hidden" id="deposit-goal-id">
+        <div class="form-group">
+          <label id="deposit-goal-name" style="color: var(--accent-blue); font-size: 14px;">Goal Name</label>
+        </div>
+        <div class="form-group">
+          <label>Deposit Amount ($)</label>
+          <input type="number" id="deposit-amount" class="form-control" min="0.01" step="0.01" placeholder="100.00" required>
+        </div>
+        <div class="form-group">
+          <label>Deposit Note (Optional)</label>
+          <input type="text" id="deposit-note" class="form-control" placeholder="e.g. Bi-weekly paycheck allocation">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-deposit')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-deposit">Add Deposit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AI Insights & Financial Advisor -->
+  <div class="modal-overlay" id="modal-ai">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 22px;">🤖</span>
+          <div>
+            <h2 id="ai-modal-goal-title">Groq AI Financial Guidance</h2>
+            <div style="font-size: 12px; color: var(--text-muted);">Model: LLaMA 3.3-70B Versatile Financial Engine</div>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeModal('modal-ai')">&times;</button>
+      </div>
+      <div id="ai-content-box">
+        <div style="text-align: center; padding: 40px 0;">
+          <div class="spinner"></div>
+          <p style="color: var(--text-muted); margin-top: 14px; font-size: 13px;">Groq LLaMA 3.3-70B analyzing savings velocity and budgeting pace...</p>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-ai')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">Notification message</div>
+
+  <script>
+    // In-memory application state
+    let state = {
+      goals: [],
+      kpis: {},
+      filter: 'all',
+      searchQuery: '',
+      isGasEnv: typeof google !== 'undefined' && google.script && google.script.run
+    };
+
+    // Default mock data when running standalone outside Google Apps Script
+    const mockGoals = [
+      {
+        goalId: 'GOAL-1001',
+        goalName: '6-Month Emergency Fund',
+        category: 'Emergency Fund',
+        targetAmount: 12000,
+        currentSavings: 8400,
+        remainingAmount: 3600,
+        deadline: '2026-12-31',
+        daysRemaining: 92,
+        progressPct: 70.0,
+        status: 'In Progress',
+        emailAlerts: true,
+        purpose: 'Maintain 6 months of living expenses in high-yield savings for safety.'
+      },
+      {
+        goalId: 'GOAL-1002',
+        goalName: 'M3 Max MacBook Pro',
+        category: 'Gadget / Electronics',
+        targetAmount: 3500,
+        currentSavings: 3500,
+        remainingAmount: 0,
+        deadline: '2026-10-15',
+        daysRemaining: 15,
+        progressPct: 100.0,
+        status: 'Completed',
+        emailAlerts: true,
+        purpose: 'Workstation upgrade for AI engineering and development.'
+      },
+      {
+        goalId: 'GOAL-1003',
+        goalName: 'Tokyo Vacation 2026',
+        category: 'Travel & Vacation',
+        targetAmount: 5000,
+        currentSavings: 1750,
+        remainingAmount: 3250,
+        deadline: '2026-11-15',
+        daysRemaining: 46,
+        progressPct: 35.0,
+        status: 'In Progress',
+        emailAlerts: true,
+        purpose: 'Flights, accommodations in Shinjuku, and Mount Fuji tour.'
+      },
+      {
+        goalId: 'GOAL-1004',
+        goalName: 'Cloud & AI Certifications',
+        category: 'Education',
+        targetAmount: 1500,
+        currentSavings: 400,
+        remainingAmount: 1100,
+        deadline: '2026-10-08',
+        daysRemaining: 8,
+        progressPct: 26.67,
+        status: 'Near Deadline',
+        emailAlerts: true,
+        purpose: 'Professional certification exams and specialized learning vouchers.'
+      }
+    ];
+
+    // Initialize application on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchDashboardData();
+    });
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function fetchDashboardData() {
+      if (state.isGasEnv) {
+        google.script.run
+          .withSuccessHandler((response) => {
+            if (response && response.goals) {
+              state.goals = response.goals;
+              state.kpis = response.kpis;
+              renderDashboard();
+            }
+          })
+          .withFailureHandler((err) => {
+            showToast('GAS Error: ' + err.message);
+          })
+          .getDashboardData();
+      } else {
+        // Fallback for standalone preview / local development
+        state.goals = [...mockGoals];
+        calculateLocalKpis();
+        renderDashboard();
+      }
+    }
+
+    function calculateLocalKpis() {
+      let totalGoals = state.goals.length;
+      let totalTarget = 0;
+      let totalSaved = 0;
+      let active = 0, completed = 0, overdue = 0;
+
+      state.goals.forEach(g => {
+        totalTarget += g.targetAmount;
+        totalSaved += g.currentSavings;
+        if (g.status === 'Completed') completed++;
+        else if (g.status === 'Overdue') { overdue++; active++; }
+        else active++;
+      });
+
+      state.kpis = {
+        totalGoals,
+        totalTarget,
+        totalSaved,
+        totalRemaining: Math.max(0, totalTarget - totalSaved),
+        overallProgressPct: totalTarget > 0 ? ((totalSaved / totalTarget) * 100).toFixed(1) : 0,
+        activeGoals: active,
+        completedGoals: completed,
+        overdueGoals: overdue
+      };
+    }
+
+    function renderDashboard() {
+      // Update KPIs
+      document.getElementById('kpi-total-goals').innerText = state.kpis.totalGoals || 0;
+      document.getElementById('kpi-active-goals').innerText = `Active: ${state.kpis.activeGoals || 0}`;
+      document.getElementById('kpi-total-saved').innerText = `$${(state.kpis.totalSaved || 0).toLocaleString()}`;
+      document.getElementById('kpi-overall-progress').innerText = `Overall: ${state.kpis.overallProgressPct || 0}%`;
+      document.getElementById('kpi-total-remaining').innerText = `$${(state.kpis.totalRemaining || 0).toLocaleString()}`;
+      document.getElementById('kpi-total-target').innerText = `Goal Pool: $${(state.kpis.totalTarget || 0).toLocaleString()}`;
+      document.getElementById('kpi-completed-goals').innerText = state.kpis.completedGoals || 0;
+      document.getElementById('kpi-overdue-goals').innerText = `Overdue: ${state.kpis.overdueGoals || 0}`;
+
+      // Filter and render goal cards
+      const container = document.getElementById('goals-grid');
+      container.innerHTML = '';
+
+      const filtered = state.goals.filter(g => {
+        const matchesFilter = state.filter === 'all' || g.status === state.filter;
+        const matchesSearch = !state.searchQuery || 
+          g.goalName.toLowerCase().includes(state.searchQuery.toLowerCase()) || 
+          g.category.toLowerCase().includes(state.searchQuery.toLowerCase());
+        return matchesFilter && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 48px; background: var(--card-bg); border-radius: 20px; border: 1px dashed var(--card-border);">
+            <div style="font-size: 32px; margin-bottom: 12px;">🎯</div>
+            <h3 style="font-size: 16px; margin-bottom: 6px;">No goals found</h3>
+            <p style="color: var(--text-muted); font-size: 13px;">Create your first financial goal to start tracking progress with AI guidance!</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(goal => {
+        const card = createGoalCardElement(goal);
+        container.appendChild(card);
+      });
+    }
+
+    function createGoalCardElement(goal) {
+      const card = document.createElement('div');
+      card.className = 'goal-card';
+
+      let statusBadgeClass = 'badge-in-progress';
+      if (goal.status === 'Completed') statusBadgeClass = 'badge-completed';
+      else if (goal.status === 'Near Deadline') statusBadgeClass = 'badge-near-deadline';
+      else if (goal.status === 'Overdue') statusBadgeClass = 'badge-overdue';
+
+      const progressColor = goal.progressPct >= 100 ? '#10B981' : (goal.progressPct >= 50 ? '#3B82F6' : '#F59E0B');
+
+      card.innerHTML = `
+        <div>
+          <div class="goal-header">
+            <div>
+              <span class="goal-category">${escapeHtml(goal.category)}</span>
+              <h3 class="goal-title">${escapeHtml(goal.goalName)}</h3>
+            </div>
+            <span class="badge-status ${statusBadgeClass}">${goal.status}</span>
+          </div>
+          
+          <p class="goal-purpose">${escapeHtml(goal.purpose || 'No description specified.')}</p>
+
+          <div class="progress-section">
+            <div class="progress-labels">
+              <span>Progress: <strong>${goal.progressPct}%</strong></span>
+              <span>Deadline: <strong>${goal.deadline || 'N/A'}</strong></span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: ${Math.min(100, goal.progressPct)}%; background: ${progressColor};"></div>
+            </div>
+          </div>
+
+          <div class="metrics-summary">
+            <div>
+              <div class="metric-sub-label">Saved</div>
+              <div class="metric-sub-val" style="color: #10B981;">$${goal.currentSavings.toLocaleString()}</div>
+            </div>
+            <div>
+              <div class="metric-sub-label">Target</div>
+              <div class="metric-sub-val">$${goal.targetAmount.toLocaleString()}</div>
+            </div>
+            <div>
+              <div class="metric-sub-label">Remaining</div>
+              <div class="metric-sub-val" style="color: #F59E0B;">$${goal.remainingAmount.toLocaleString()}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="goal-actions">
+          <button class="btn-card btn-deposit" onclick="openDepositModal('${goal.goalId}', '${escapeHtml(goal.goalName)}')">
+            <span>+</span> Deposit
+          </button>
+          <button class="btn-card btn-ai" onclick="requestAiInsight('${goal.goalId}', '${escapeHtml(goal.goalName)}')">
+            <span>🤖</span> AI Insights
+          </button>
+          <button class="btn-card btn-del" title="Delete Goal" onclick="handleDeleteGoal('${goal.goalId}')">
+            &times;
+          </button>
+        </div>
+      `;
+
+      return card;
+    }
+
+    function setFilter(filter, el) {
+      state.filter = filter;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      renderDashboard();
+    }
+
+    function handleSearch() {
+      state.searchQuery = document.getElementById('search-input').value;
+      renderDashboard();
+    }
+
+    // Modal Control Helpers
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function openCreateModal() {
+      // Set default deadline to 3 months ahead
+      const d = new Date();
+      d.setMonth(d.getMonth() + 3);
+      document.getElementById('create-deadline').value = d.toISOString().split('T')[0];
+      openModal('modal-create');
+    }
+
+    function handleCreateGoal(e) {
+      e.preventDefault();
+      const goalData = {
+        goalName: document.getElementById('create-name').value,
+        category: document.getElementById('create-category').value,
+        targetAmount: parseFloat(document.getElementById('create-target').value),
+        initialSavings: parseFloat(document.getElementById('create-initial').value) || 0,
+        deadline: document.getElementById('create-deadline').value,
+        userEmail: document.getElementById('create-email').value,
+        purpose: document.getElementById('create-purpose').value,
+        emailAlerts: document.getElementById('create-alerts').checked
+      };
+
+      const btn = document.getElementById('btn-save-goal');
+      btn.innerText = 'Creating...';
+      btn.disabled = true;
+
+      if (state.isGasEnv) {
+        google.script.run
+          .withSuccessHandler(() => {
+            closeModal('modal-create');
+            document.getElementById('form-create-goal').reset();
+            btn.innerText = 'Create Goal';
+            btn.disabled = false;
+            showToast('Goal created in Google Sheets!');
+            fetchDashboardData();
+          })
+          .withFailureHandler((err) => {
+            btn.innerText = 'Create Goal';
+            btn.disabled = false;
+            showToast('Error: ' + err.message);
+          })
+          .createSavingsGoal(goalData);
+      } else {
+        // Local simulation
+        const newGoal = {
+          goalId: 'GOAL-' + Math.floor(100000 + Math.random() * 900000),
+          ...goalData,
+          currentSavings: goalData.initialSavings,
+          remainingAmount: Math.max(0, goalData.targetAmount - goalData.initialSavings),
+          progressPct: goalData.targetAmount > 0 ? parseFloat(((goalData.initialSavings / goalData.targetAmount) * 100).toFixed(2)) : 0,
+          daysRemaining: 90,
+          status: 'In Progress'
+        };
+        state.goals.unshift(newGoal);
+        calculateLocalKpis();
+        renderDashboard();
+        closeModal('modal-create');
+        document.getElementById('form-create-goal').reset();
+        btn.innerText = 'Create Goal';
+        btn.disabled = false;
+        showToast('Goal created successfully!');
+      }
+    }
+
+    function openDepositModal(goalId, goalName) {
+      document.getElementById('deposit-goal-id').value = goalId;
+      document.getElementById('deposit-goal-name').innerText = 'Target: ' + goalName;
+      document.getElementById('deposit-amount').value = '';
+      document.getElementById('deposit-note').value = '';
+      openModal('modal-deposit');
+    }
+
+    function handleDepositSubmit(e) {
+      e.preventDefault();
+      const goalId = document.getElementById('deposit-goal-id').value;
+      const amount = parseFloat(document.getElementById('deposit-amount').value);
+      const note = document.getElementById('deposit-note').value;
+
+      const btn = document.getElementById('btn-submit-deposit');
+      btn.innerText = 'Recording...';
+      btn.disabled = true;
+
+      if (state.isGasEnv) {
+        google.script.run
+          .withSuccessHandler(() => {
+            closeModal('modal-deposit');
+            btn.innerText = 'Add Deposit';
+            btn.disabled = false;
+            showToast(`Deposited $${amount} successfully!`);
+            fetchDashboardData();
+          })
+          .withFailureHandler((err) => {
+            btn.innerText = 'Add Deposit';
+            btn.disabled = false;
+            showToast('Error: ' + err.message);
+          })
+          .addDeposit(goalId, amount, note);
+      } else {
+        const goal = state.goals.find(g => g.goalId === goalId);
+        if (goal) {
+          goal.currentSavings += amount;
+          goal.remainingAmount = Math.max(0, goal.targetAmount - goal.currentSavings);
+          goal.progressPct = parseFloat(((goal.currentSavings / goal.targetAmount) * 100).toFixed(2));
+          if (goal.progressPct >= 100) goal.status = 'Completed';
+          calculateLocalKpis();
+          renderDashboard();
+        }
+        closeModal('modal-deposit');
+        btn.innerText = 'Add Deposit';
+        btn.disabled = false;
+        showToast(`Deposited $${amount} successfully!`);
+      }
+    }
+
+    function handleDeleteGoal(goalId) {
+      if (!confirm('Are you sure you want to remove this financial goal?')) return;
+
+      if (state.isGasEnv) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showToast('Goal deleted.');
+            fetchDashboardData();
+          })
+          .deleteSavingsGoal(goalId);
+      } else {
+        state.goals = state.goals.filter(g => g.goalId !== goalId);
+        calculateLocalKpis();
+        renderDashboard();
+        showToast('Goal deleted.');
+      }
+    }
+
+    function requestAiInsight(goalId, goalName) {
+      document.getElementById('ai-modal-goal-title').innerText = goalName;
+      const contentBox = document.getElementById('ai-content-box');
+      contentBox.innerHTML = `
+        <div style="text-align: center; padding: 40px 0;">
+          <div class="spinner"></div>
+          <p style="color: var(--text-muted); margin-top: 14px; font-size: 13px;">Groq LLaMA 3.3-70B analyzing savings velocity and budgeting pace...</p>
+        </div>
+      `;
+      openModal('modal-ai');
+
+      if (state.isGasEnv) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.recommendation) {
+              contentBox.innerHTML = `<div class="ai-bubble">${escapeHtml(res.recommendation)}</div>`;
+            } else {
+              contentBox.innerHTML = `<div class="ai-bubble">No recommendations generated.</div>`;
+            }
+          })
+          .withFailureHandler((err) => {
+            contentBox.innerHTML = `<div style="color: #EF4444; padding: 14px;">Error fetching AI insight: ${escapeHtml(err.message)}</div>`;
+          })
+          .generateAiRecommendation(goalId);
+      } else {
+        // High quality simulated AI advisor response for standalone preview
+        setTimeout(() => {
+          const goal = state.goals.find(g => g.goalId === goalId);
+          const days = goal ? Math.max(1, goal.daysRemaining) : 30;
+          const remaining = goal ? goal.remainingAmount : 1000;
+          const daily = (remaining / days).toFixed(2);
+          const weekly = (remaining / Math.ceil(days / 7)).toFixed(2);
+
+          contentBox.innerHTML = `
+            <div class="ai-bubble">
+### 📊 SaveIQ AI Financial Guidance for: ${escapeHtml(goalName)}
+
+**1. Executive Status & Velocity Assessment**
+You have funded **${goal ? goal.progressPct : 50}%** of your target with **${days} days** remaining until your deadline. Your overall completion trajectory is steady, but requires proactive capital preservation.
+
+**2. Required Savings Pace**
+To achieve full funding by your target date:
+• **Daily Savings Pace**: **$${daily} / day**
+• **Weekly Savings Pace**: **$${weekly} / week**
+
+**3. Practical Budget Optimization Tactics**
+• Implement the **"50/30/20 Micro-Trim"**: Reallocate 5% from discretionary dining and entertainment directly toward this goal bucket.
+• Audit active recurring digital subscriptions. Pausing two non-essential subscriptions generates ~$30-$45/month in instant velocity.
+
+**4. Behavioral Discipline Habit**
+• **The 72-Hour Rule**: Before making any impulse purchase exceeding $${daily}, wait 72 hours. If the urge passes, transfer that exact amount directly into this '${escapeHtml(goalName)}' fund.
+• **Automate Frictionless Deposits**: Set up an automatic weekly transfer of $${weekly} on paycheck arrival day.
+
+**5. Motivational Finish Line Strategy**
+You are only $${remaining.toLocaleString()} away from unlocking this milestone! Celebrate visual milestones at every 10% increment to reinforce dopamine-driven financial discipline.
+            </div>
+          `;
+        }, 1200);
+      }
+    }
+
+    function triggerAuditNow() {
+      showToast('Running automated financial audit...');
+      if (state.isGasEnv) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            showToast(`Audit complete! Processed ${res.processedCount} goals, sent ${res.alertsSent} alert emails.`);
+            fetchDashboardData();
+          })
+          .runDailyFinancialAudit();
+      } else {
+        setTimeout(() => {
+          showToast('Audit complete! Processed 4 goals. All statuses updated.');
+        }, 800);
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>

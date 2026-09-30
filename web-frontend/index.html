@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaveIQ – AI Savings Goal Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-meta">
+          <h1>SaveIQ</h1>
+          <p>AI Savings Goal Tracker &bull; Groq LLaMA 3.3-70B Engine &bull; Mode: <span id="backend-mode-badge" style="color: #60A5FA; font-weight: 700;">LOCAL</span></p>
+        </div>
+      </div>
+      <div class="header-controls">
+        <button class="btn btn-secondary" onclick="exportPdfStatement()" title="Export PDF Statement">
+          <span>📄</span> PDF Statement
+        </button>
+        <button class="btn btn-secondary" onclick="triggerAudit()" title="Run Daily Audit & Check Deadlines">
+          <span>⏱️</span> Audit Engine
+        </button>
+        <button class="btn btn-primary" onclick="openCreateModal()">
+          <span>+</span> New Savings Goal
+        </button>
+        <button class="btn-settings" onclick="openSettingsModal()" title="Settings & Backend Config">
+          ⚙️
+        </button>
+      </div>
+    </header>
+
+    <!-- Executive KPI Summary Cards -->
+    <section class="kpi-section">
+      <div class="kpi-box">
+        <div class="kpi-top-bar" style="background: #3B82F6;"></div>
+        <div class="kpi-title">Total Goals</div>
+        <div class="kpi-value" id="kpi-total-goals">0</div>
+        <div class="kpi-sub" id="kpi-active-count">Active: 0</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-top-bar" style="background: #10B981;"></div>
+        <div class="kpi-title">Total Saved</div>
+        <div class="kpi-value" id="kpi-total-saved">$0</div>
+        <div class="kpi-sub" id="kpi-overall-rate">Overall Pace: 0%</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-top-bar" style="background: #F59E0B;"></div>
+        <div class="kpi-title">Remaining Target</div>
+        <div class="kpi-value" id="kpi-total-remaining">$0</div>
+        <div class="kpi-sub" id="kpi-total-target">Target Pool: $0</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-top-bar" style="background: #8B5CF6;"></div>
+        <div class="kpi-title">Completed Goals</div>
+        <div class="kpi-value" id="kpi-completed-goals">0</div>
+        <div class="kpi-sub" id="kpi-overdue-count">Overdue: 0</div>
+      </div>
+    </section>
+
+    <!-- Analytics Section: Velocity Chart & Category Breakdown -->
+    <section class="analytics-section">
+      <div class="analytics-card">
+        <div class="card-title-bar">
+          <h2><span>📈</span> Financial Velocity & Savings Trajectory</h2>
+          <span style="font-size: 11px; color: var(--text-dim);">Dotted: Target Pace &bull; Solid: Actual Accumulation</span>
+        </div>
+        <div class="chart-canvas-container">
+          <canvas id="projection-chart"></canvas>
+        </div>
+      </div>
+      <div class="analytics-card">
+        <div class="card-title-bar">
+          <h2><span>📊</span> Category Allocation</h2>
+          <span style="font-size: 11px; color: var(--text-dim);">Portfolio Share</span>
+        </div>
+        <div class="category-list" id="category-breakdown-list">
+          <!-- Dynamically Rendered Categories -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter & Search Toolbar -->
+    <section class="filter-toolbar">
+      <div class="chip-group">
+        <button class="chip active" onclick="setFilter('all', this)">All Goals</button>
+        <button class="chip" onclick="setFilter('In Progress', this)">In Progress</button>
+        <button class="chip" onclick="setFilter('Near Deadline', this)">Near Deadline</button>
+        <button class="chip" onclick="setFilter('Completed', this)">Completed</button>
+        <button class="chip" onclick="setFilter('Overdue', this)">Overdue</button>
+      </div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search by name or category..." oninput="handleSearch(this.value)">
+      </div>
+    </section>
+
+    <!-- Goals Grid -->
+    <section class="goals-container" id="goals-container">
+      <!-- Dynamically Rendered Goal Cards -->
+    </section>
+  </div>
+
+  <!-- MODAL: Create New Goal -->
+  <div class="modal-layer" id="modal-create-goal">
+    <div class="modal-card">
+      <div class="modal-title-row">
+        <h2>Create Savings Goal</h2>
+        <button class="btn-modal-close" onclick="closeModal('modal-create-goal')">&times;</button>
+      </div>
+      <form id="form-new-goal" onsubmit="handleCreateGoalSubmit(event)">
+        <div class="input-group">
+          <label>Goal Name</label>
+          <input type="text" id="new-name" class="input-field" placeholder="e.g. 6-Month Emergency Fund" required>
+        </div>
+        <div class="grid-2">
+          <div class="input-group">
+            <label>Category</label>
+            <select id="new-category" class="input-field">
+              <option value="Emergency Fund">Emergency Fund</option>
+              <option value="Gadget / Electronics">Gadget / Electronics</option>
+              <option value="Travel & Vacation">Travel & Vacation</option>
+              <option value="Education">Education</option>
+              <option value="Vehicle / Transport">Vehicle / Transport</option>
+              <option value="Home & Real Estate">Home & Real Estate</option>
+              <option value="Investment / Wealth">Investment / Wealth</option>
+              <option value="General Savings">General Savings</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Target Amount ($)</label>
+            <input type="number" id="new-target" class="input-field" placeholder="5000" min="1" step="0.01" required>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="input-group">
+            <label>Initial Savings ($)</label>
+            <input type="number" id="new-initial" class="input-field" placeholder="0" min="0" step="0.01" value="0">
+          </div>
+          <div class="input-group">
+            <label>Target Deadline</label>
+            <input type="date" id="new-deadline" class="input-field" required>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Notification Email</label>
+          <input type="email" id="new-email" class="input-field" placeholder="user@example.com" value="user@example.com">
+        </div>
+        <div class="input-group">
+          <label>Purpose / Motivational Context</label>
+          <textarea id="new-purpose" class="input-field" rows="2" placeholder="Why is this financial milestone critical to your freedom?"></textarea>
+        </div>
+        <div class="input-group" style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="new-alerts" checked>
+          <label for="new-alerts" style="margin: 0; text-transform: none; cursor: pointer;">Enable automated daily audit & deadline reminder alerts</label>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create-goal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Goal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Record Deposit -->
+  <div class="modal-layer" id="modal-deposit">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-title-row">
+        <h2>Record Savings Deposit</h2>
+        <button class="btn-modal-close" onclick="closeModal('modal-deposit')">&times;</button>
+      </div>
+      <form id="form-record-deposit" onsubmit="handleDepositSubmit(event)">
+        <input type="hidden" id="deposit-target-id">
+        <div class="input-group">
+          <div id="deposit-target-name" style="color: #60A5FA; font-weight: 700; font-size: 14px;">Goal</div>
+        </div>
+        <div class="input-group">
+          <label>Deposit Amount ($)</label>
+          <input type="number" id="deposit-val" class="input-field" min="0.01" step="0.01" placeholder="100.00" required>
+        </div>
+        <div class="input-group">
+          <label>Deposit Note (Optional)</label>
+          <input type="text" id="deposit-note" class="input-field" placeholder="e.g. Bi-weekly paycheck allocation">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-deposit')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm Deposit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AI Insights & Recommendation Engine -->
+  <div class="modal-layer" id="modal-ai">
+    <div class="modal-card" style="max-width: 700px;">
+      <div class="modal-title-row">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;">🤖</span>
+          <div>
+            <h2 id="ai-modal-title">AI Financial Guidance</h2>
+            <div id="ai-model-label" style="font-size: 12px; color: var(--text-secondary);">Engine: Groq LLaMA 3.3-70B Versatile</div>
+          </div>
+        </div>
+        <button class="btn-modal-close" onclick="closeModal('modal-ai')">&times;</button>
+      </div>
+      <div id="ai-modal-body">
+        <!-- AI Response Content -->
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-ai')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Email Alert Preview -->
+  <div class="modal-layer" id="modal-email-preview">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-title-row">
+        <h2>Simulated Email Notification</h2>
+        <button class="btn-modal-close" onclick="closeModal('modal-email-preview')">&times;</button>
+      </div>
+      <div id="email-preview-content">
+        <!-- Rendered Email Body -->
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-email-preview')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: System Settings & Backend Mode -->
+  <div class="modal-layer" id="modal-settings">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-title-row">
+        <h2>Settings & Architecture Switcher</h2>
+        <button class="btn-modal-close" onclick="closeModal('modal-settings')">&times;</button>
+      </div>
+      <form onsubmit="handleSaveSettings(event)">
+        <div class="input-group">
+          <label>Backend Connectivity Mode</label>
+          <select id="settings-backend-mode" class="input-field">
+            <option value="local">Client-Side / Local Storage (Standalone Zero-Config)</option>
+            <option value="fastapi">FastAPI Python Backend (REST & Database)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>FastAPI Backend URL</label>
+          <input type="text" id="settings-fastapi-url" class="input-field" placeholder="http://localhost:8000">
+        </div>
+        <div class="input-group">
+          <label>Groq API Key (Optional for Client-Side AI)</label>
+          <input type="password" id="settings-groq-key" class="input-field" placeholder="gsk_...">
+          <small style="color: var(--text-dim); font-size: 11px;">If left blank, SaveIQ uses intelligent built-in CFP heuristics.</small>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-settings')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Settings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="notification-toast" id="app-toast">Notification Message</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
